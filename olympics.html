@@ -1,12 +1,12 @@
 <!DOCTYPE HTML>
 <!--
-	Massively by HTML5 UP
+	Forty by HTML5 UP
 	html5up.net | @ajlkn
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
 <html>
 	<head>
-		<title>Olympic Draft</title>
+		<title>Eric Brown Portfolio</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
@@ -19,35 +19,35 @@
 
 				<!-- Header -->
 					<header id="header">
-						<a href="index.html" class="logo">Eric S. Brown Portfolio</a>
+						<a href="index.html" class="logo"><strong>Eric S. Brown</strong> <span>Data Analyst</span></a>
+						<nav>
+							<a href="#menu">Menu</a>
+						</nav>
 					</header>
 
-				<!-- Nav -->
-					<nav id="nav">
+				<!-- Menu -->
+					<nav id="menu">
 						<ul class="links">
-							<li><a href="index.html">Home</a></li>
 							<li><a href="resume.html">Resume</a></li>
-							<li class="active"><a href="olympics.html">Olympics Predictive Analysis</a></li>
+							<li><a href="cyclistic.html">Cyclistic Case Study</a></li>
+							<li><a href="olympics.html">Predictive Model - Olympics</a></li>
+							<li><a href="peloton.html">Tableau Fitness Tracker</a></li>
 						</ul>
-						
-						<ul class="icons">
-                            <li><a href="https://www.linkedin.com/in/ericsbrownco/" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
-							<li><a href="https://github.com/ericsbrownco" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
-						</ul>
+
 					</nav>
 
 				<!-- Main -->
-					<div id="main">
+					<div id="main" class="alt">
 
-						<!-- Post -->
-							<section class="post">
-								<header class="major">
-									<h1>Predictive Model</h1><br>
-                                    <p>Winter Olympic Draft Utilizing Excel, SQL, R, and Tableau</p>
-								</header>
-
-								<!-- Text stuff -->
-								<div class='tableauPlaceholder' id='viz1644006393502' style='position: relative'><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='OlympicDraftPicks&#47;Dashboard1' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1644006393502');                    var vizElement = divElement.getElementsByTagName('object')[0];                    if ( divElement.offsetWidth > 800 ) { vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';} else if ( divElement.offsetWidth > 500 ) { vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';} else { vizElement.style.width='100%';vizElement.style.height='1277px';}                     var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+						<!-- One -->
+							<section id="one">
+								<div class="inner">
+									<header class="major">
+										<h1>Predictive Model</h1>
+										
+										<h5>Winter Olympic Draft Utilizing Excel, SQl, R, and Tableau</h5>
+									</header>
+									<div class='tableauPlaceholder' id='viz1644006393502' style='position: relative'><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='OlympicDraftPicks&#47;Dashboard1' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1644006393502');                    var vizElement = divElement.getElementsByTagName('object')[0];                    if ( divElement.offsetWidth > 800 ) { vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';} else if ( divElement.offsetWidth > 500 ) { vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';} else { vizElement.style.width='100%';vizElement.style.height='1277px';}                     var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
 									<br><h2>Introduction</h2>
 									<p>Our family runs an Olympic Draft - similar to fantasy football or baseball - for each Olympic cycle. The purpose of this case study is to identify trends in medal count / point value to create a predictive analysis of which teams should be selected in which order.</p>
 									<h2>Assumptions</h2>
@@ -353,22 +353,27 @@ Predictions input. Now a simple matter of exporting the information to a .csv an
 write.csv(predict2022,"2022_predictions.csv", row.names = FALSE)<br><br>
 <h2>Acknowledgements</h2>
 I'd like to thank Alex Freberg for his amazing Youtube series with excellent technical knowledge in an easy to understand manner.<br>
-I'd also like to thank Google and Coursera for their Data Analysis Certificate Program which I recently completed.<br>
+I'd also like to thank Google and Coursera for their Data Analysis Certificate Program which I recently completed.<br><br><br>
 
-
-                                        </p>
-                                    
-				<!-- Copyright -->
-					<div id="copyright">
-						<ul><li>&copy; Untitled</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+				<!-- Footer -->
+				<footer id="footer">
+					<div class="inner">
+						<ul class="icons">
+							<li><a href="https://www.linkedin.com/in/ericsbrownco/" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+							<li><a href="https://github.com/ericsbrownco" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+						</ul>
+						<ul class="copyright">
+							<li>&copy; Eric Brown</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li>
+						</ul>
 					</div>
+				</footer>
 
 			</div>
 
 		<!-- Scripts -->
 			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/jquery.scrollex.min.js"></script>
 			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
 			<script src="assets/js/browser.min.js"></script>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
