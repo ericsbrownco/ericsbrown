@@ -49,385 +49,340 @@
 									</header>
 									<iframe src="https://drive.google.com/file/d/1iz5yrCT46w6i0m4W3PzGYeHJ5hfeVnTX/preview" width="780" height="480" allow="autoplay"></iframe>
 									<br><br>
-									<h2> Introduction</h2>
-																	<br>In this study, we have been tasked with analyzing a fictional company's data (Cyclistic). Our stakeholders have tasked us with identifying how "casual riders" (Those who have not purchased and annual membership) differ from "members" (Those who have purchased an annual membership).  Further, we are tasked with determining our top 3 marketing strategies based on our insights.
-									<br>
-									Source data is linked in the final presentation above.
-									<br><br>
-									The following is my accounting of how the problem was approached:
-									<br><br>
-									Ask:<br>
-									-What data do we have available for the rides and riders?<br>
-									-How do member and casual riders interact with Cyclistic bikes?<br>
-									-What marketing strategies should we employ to attract Casual riders into purchasing Memberships?<br>
-									<br>
-									Steps:<br>
-									-Downloaded sample data and explored.<br>
-									--Findings: Table consisting of ride data including - rideID, start Station, Start Coordinates, End Station, End Coordinates, Start/End Times<br>
-									Broken down monthly.<br>
-									Table for Q1 which includes the same information but much larger amounts but the data isn't available after Q1 2020.<br>
-									<br>
-									Action Item:<br>
-									Attempted to join in BigQuery.  CSV files are too large for upload.  Will need to handle locally.<br>
-									<br>
-									<h2>RStudio Work</h2>
-									tripdata <- union(`202004.divvy.tripdata`,`202005.divvy.tripdata`)<br>
-									View(tripdata)<br>
-									<br>
-									tripdata <- combine(`202004.divvy.tripdata`,`202005.divvy.tripdata`)<br>
-									<br>
-									Installed packages needed<br>
-									<br>
-									install.packages("tidyverse")<br>
-									library(tidyverse)<br>
-									install.packages("gdata")<br>
-									library(gdata)<br>
-									library(lubridate)<br>
-									library(ggplot2)<br>
-									library(scales)<br>
-									<br>
-									Using gdata package and combine() created variable for all trip data in past 2 years.<br>
-									<br>
-									tripdata <- combine(`202004.divvy.tripdata`,`202005.divvy.tripdata`,`202006.divvy.tripdata`,`202007.divvy.tripdata`,`202008.divvy.tripdata`,`202009.divvy.tripdata`,`202010.divvy.tripdata`,`202011.divvy.tripdata`,`202012.divvy.tripdata`,`202101.divvy.tripdata`,`202102.divvy.tripdata`,`202103.divvy.tripdata`,`202104.divvy.tripdata`,`202105.divvy.tripdata`,`202106.divvy.tripdata`,`202107.divvy.tripdata`,`202108.divvy.tripdata`,`202109.divvy.tripdata`,`202110.divvy.tripdata`,`202111.divvy.tripdata`,`202112.divvy.tripdata`,Divvy_Trips_2020_Q1)
-									<br><br>
-									head(tripdata)<br>
-									View(tripdata)<br>
-									<br>
-									<h2>Cleaning</h2>
-									Using n_occur to search rideID for duplicates.<br>
-									n_occur <- data.frame(table(tripdata$ride_id))<br>
-									n_occur[n_occur$Freq > 1,]<br>
-									<br>
-									Found significant number of duplicates. Utilized distinct() to remove duplicate ride_id from table.<br>
-									<br>
-									tripdata %>% <br>
-									  distinct(tripdata$ride_id, keep_all = TRUE)<br>
-									  <br>
-									Checked unique values in rideable_type and member_casual to confirm no typos.  No typos found.<br>
-									<br>
-									tripdata %>% <br>
-									  count(rideable_type)<br>
-									Searched for outliers.  <br>
-									Created quick bar chart with starting station name.  Found 785465 items that do not have a start_station_name.  Confirmed with start_station_id.  702505 blank, 83583 <na>.  This represents 8.6% of the items.  Would ask for clarification as to how we would like to proceed in this instance.  Does not appear to impact the scope of our analysis however brings reliability of the data into question.  Will impact analysis if we look at starting stations for members vs. casual.
-										<br>Confirmed above with end stationID also.<br>
-									tripdata %>% <br>
-									  count(member_casual)<br>
-									  <br>
-									str(Cleaned_Trip_Data)<br>
-									<br>
-									ggplot(data = tripdata) + geom_bar(mapping = aes(member_casual))<br>
-									ggplot(data = tripdata) + geom_bar(mapping = aes(start_station_name))<br>
-									<br>
-									tripdata %>% <br>
-									  count(tripdata$start_station_name) %>% <br>
-									  ungroup() %>% <br>
-									  arrange(desc(n))<br>
-									ggplot(data = tripdata) + geom_bar(mapping = aes(start_station_id))<br>
-									<br>
-									tripdata %>% <br>
-									  count(tripdata$start_station_id) %>% <br>
-									  ungroup() %>% <br>
-									  arrange(desc(n))<br>
-									  <br>
-									ggplot(data = tripdata) + geom_bar(mapping = aes(end_station_id))<br>
-									<br>
-									tripdata %>% <br>
-									  count(tripdata$end_station_id) %>% <br>
-									  ungroup() %>% <br>
-									  arrange(desc(n))<br>
-									  <br>
-									Removing duplicates<br>
-									<br>
-									tripdata[!duplicated(tripdata), ]<br>
-									<br>
-									install.packages('parallel')<br>
-									library(parallel)<br>
-									<br>
-									tripdataclean <- tripdata %>% distinct(tripdata$ride_id, .keep_all = TRUE)<br>
-									<br>
-									Saving clean csv<br>
-									<br>
-									write.csv(tripdataclean,"Cleaned Trip Data.csv", row.names = FALSE)<br>
-									<br>
-									<h2>Analyzing Data</h2>
-									Created "Duration" column.<br>
-									<br>
-									Cleaned_Trip_Data$duration <- ridelength<br>
-									<br>
-									Average duration<br>
-									<br>
-									summarize(Cleaned_Trip_Data,mean(Cleaned_Trip_Data$duration))<br>
-									<br>
-									A tibble: 1 x 1<br>
-									`mean(Cleaned_Trip_Data$duration)`<br>
-									<drtn>                            <br>
-									  1 1422.822 secs<br>
-									<br>
-									Finding Average of member vs. casual<br>
-									by(data = Cleaned_Trip_Data$duration, INDICES = Cleaned_Trip_Data$member_casual, FUN = mean)<br>
-									<br>
-									Cleaned_Trip_Data$member_casual: casual<br>
-									[1] 2218.434<br>
-									 ------------------------------------------------------------------------------------------ <br>
-									  Cleaned_Trip_Data$member_casual: member<br>
-									[1] 831.4539<br>
-									<br>
-									significant difference in average duration between casual and member<br>
-									<br>
-									Created variable with casual and with member<br>
-									<br>
-									casual_only <- Cleaned_Trip_Data[Cleaned_Trip_Data$member_casual == 'casual',]<br>
-									member_only <- Cleaned_Trip_Data[Cleaned_Trip_Data$member_casual == 'member',]<br><br>
-									Counting most common start station<br>
-									<br>
-									casual_only<br>
-									<br>
-									casual_only %>% <br>
-									  count(start_station_name, sort = TRUE)<br>
-									  <br>
-									This resulted in the following list:<br>
-									1 NA                         355924<br>
-									2 Streeter Dr & Grand Ave     92486<br>
-									3 Millennium Park             52250<br>
-									4 Michigan Ave & Oak St       43196<br>
-									5 Lake Shore Dr & Monroe St   39757<br>
-									6 Theater on the Lake         36105<br>
-									7 Shedd Aquarium              32908<br>
-									8 Indiana Ave & Roosevelt Rd  29769<br>
-									9 Wells St & Concord Ln       29459<br>
-									10 Clark St & Elm St          27928<br>
-									<br>
-									The 1 station is Streeter Drive & Grand Ave on Navy Pier.  This is a highly touristed area.<br>
-									Continued looking at the top 5 stations.  Found all of the top 10 are within a few blocks of<br>
-									Lake Michigan.  <br>
-									<br>
-									Checked end_station_name<br>
-									<br>
-									casual_only %>% <br>
-									  count(end_station_name, sort = TRUE)<br>
-									  <br>
-									1 NA                         414226<br>
-									2 Streeter Dr & Grand Ave     97280<br>
-									3 Millennium Park             54130<br>
-									4 Michigan Ave & Oak St       44994<br>
-									5 Theater on the Lake         39321<br>
-									6 Lake Shore Dr & Monroe St   37662<br>
-									7 Lake Shore Dr & North Blvd  31381<br>
-									8 Indiana Ave & Roosevelt Rd  29440<br>
-									9 Shedd Aquarium              29386<br>
-									10 Wells St & Concord Ln       29103<br>
-									<br>
-									Compared Results to top member start stations.<br>
-									<br>
-									member_only %>% <br>
-									  count(start_station_name, sort = TRUE)<br>
-									  <br>
-									1 NA                        429541<br>
-									2 Clark St & Elm St          45259<br>
-									3 Kingsbury St & Kinzie St   40202<br>
-									4 Wells St & Concord Ln      39267<br>
-									5 Dearborn St & Erie St      35510<br>
-									6 Wells St & Elm St          34927<br>
-									7 St. Clair St & Erie St     34891<br>
-									8 Wells St & Huron St        34118<br>
-									9 Broadway & Barry Ave       33607<br>
-									10 Desplaines St & Kinzie St  31630<br>
-									<br>
-									These locations are significantly further inland and in the urban center.<br>
-									<br>
-									As before checked end_station_name to confirm findings<br>
-									<br>
-									member_only %>% <br>
-									  count(end_station_name, sort = TRUE)<br>
-									  <br>
-									Checked station_id for member_only to compare with casual<br>
-									<br>
-									member_only %>% <br>
-									  count(start_station_id, sort = TRUE)<br>
-									  <br>
-									This showed some issues with station names vs. station ID:<br>
-									1 NA               429813<br>
-									2 TA1307000039      25771<br>
-									3 KA1503000043      24407<br>
-									4 TA1308000050      24397<br>
-									5 KA1504000135      21694<br>
-									6 331               21456<br>
-									7 13045             20476<br>
-									8 TA1306000012      19942<br>
-									9 13016             19719<br>
-									10 176              19488<br>
-									<br>
-									Clearly there has been a naming convention change in the past 2 years.<br>
-									<br>
-									Will use start_station_name and not start_station_id<br>
-									<br>
-									Reviewed top stations in general<br>
-									<br>
-									Cleaned_Trip_Data %>% <br>
-									  count(start_station_name, sort = TRUE)<br>
-									  <br>
-									1 NA                      785465<br>
-									2 Streeter Dr & Grand Ave 118081<br>
-									3 Clark St & Elm St        73187<br>
-									4 Wells St & Concord Ln    68726<br>
-									5 Millennium Park          66521<br>
-									6 Theater on the Lake      66448<br>
-									7 Michigan Ave & Oak St    66123<br>
-									8 Wells St & Elm St        60221<br>
-									9 Clark St & Armitage Ave  56645<br>
-									10 Dearborn St & Erie St    56446<br>
-									<br>
-									Next, looked at type of bike to see if there are any correlations<br>
-									<br>
-									Cleaned_Trip_Data %>% <br>
-									  count(rideable_type, sort = TRUE)<br>
-									  <br>
-									1 classic_bike  3321644<br>
-									2 docked_bike   3278456<br>
-									3 electric_bike 2536437<br>
-									<br>
-									casual_only %>% <br>
-									  count(rideable_type, sort = TRUE)<br>
-									  <br>
-									1 docked_bike   1458347<br>
-									2 classic_bike  1277976<br>
-									3 electric_bike 1159232<br>
-									<br>
-									member_only %>% <br>
-									  count(rideable_type, sort = TRUE)<br>
-									  <br>
-									1 classic_bike  2043668<br>
-									2 docked_bike   1820109<br>
-									3 electric_bike 1377205<br>
-									<br>
-									Utilized tableau public to visualize most common stations to see if there is a geographic correlation.<br>
-									<br>
-									write.csv(Cleaned_Trip_Data,"Cleaned Trip Data.csv", row.names = FALSE)<br>
-									<br>
-									Additional factors evaluated:<br>
-									<br>
-									tripdata <- Cleaned_Trip_Data<br>
-									<br>
-									tripdata$date <- as.Date(tripdata$started_at)<br>
-									tripdata$month <- format(as.Date(tripdata$date), "%m")<br>
-									tripdata$day <- format(as.Date(tripdata$date), "%d")<br>
-									tripdata$year <- format(as.Date(tripdata$date), "%y")<br>
-									tripdata$day_of_week <- format(as.Date(tripdata$date), "%A")<br>
-									<br>
-									tripdata$ride_length <- difftime(tripdata$ended_at,tripdata$started_at)<br>
-									<br>
-									Converted ride_length to numeric:<br>
-									<br>
-									str(tripdata)<br>
-									is.factor(tripdata$ride_length)<br>
-									tripdata$ride_length <- as.numeric(as.character(tripdata$ride_length))<br>
-									is.numeric(tripdata$ride_length)<br>
-									<br>
-									tripdata_v2 <- tripdata[!(tripdata$start_station_name == "HQ QR" | tripdata$ride_length<0),]<br>
-										<br>
-									str(tripdata_v2)<br>
-									<br>
-									mean(tripdata_v2$ride_length, na.rm=TRUE)<br>
-									median(tripdata_v2$ride_length, na.rm=TRUE)<br>
-									min(tripdata_v2$ride_length, na.rm=TRUE)<br>
-									max(tripdata_v2$ride_length, na.rm=TRUE)<br>
-									<br>
-									summary(tripdata_v2$ride_length, na.rm=TRUE)<br>
-									<br>
-									aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual, FUN = mean)<br>
-									aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual, FUN = median)<br>
-									aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual, FUN = max)<br>
-									aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual, FUN = min)<br>
-									<br>
-									aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual + tripdata_v2$day_of_week, FUN = mean)<br>
-									<br>
-									tripdata_v2$day_of_week <- ordered(tripdata_v2$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))<br>
-									<br>
-									breakdown_day <- aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual + tripdata_v2$day_of_week, FUN = mean)<br>
-									<br>
-									Viz for day breakdown for member and causal riders.<br>
-									<br>
-									tripdata_v2 %>% <br>
-									  drop_na(member_casual) %>% <br>
-									  mutate(weekday = wday(started_at, label = TRUE)) %>% <br>
-									  group_by(member_casual, weekday) %>% <br>
-									  summarise(number_of_rides = n()<br>
-												,average_duration = mean(ride_length)) %>% <br>
-									  arrange(member_casual, weekday)  %>% <br>
-									  ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +<br>
-									  geom_col(position = "dodge") +<br>
-									  scale_fill_manual(name = "",values=c("#E1BE6A",<br>
-																		   "#40B0A6")) +<br>
-									  scale_y_continuous(labels = comma) +<br>
-									  labs(title = "Total Rides Per Weekday",subtitle="Breakdown between Casual and Annual Membership",caption="Sourced from Divvy")+<br>
-									  xlab("Weekday") +<br>
-									  ylab("Number of Rides")<br>
-									  <br>
-									ggsave("Total Rides Per Weekday.png")<br>
-									<br>
-									Viz for average duration broken down the same way.<br>
-									<br>
-									tripdata_v2 %>% <br>
-									  drop_na(member_casual) %>% <br>
-									  mutate(weekday = wday(started_at, label = TRUE)) %>% <br>
-									  group_by(member_casual, weekday) %>% <br>
-									  summarise(number_of_rides = n()<br>
-												,average_duration = mean(ride_length)) %>% <br>
-									  arrange(member_casual, weekday)  %>% <br>
-									  ggplot(aes(x = weekday, y = average_duration, fill = member_casual)) +<br>
-									  geom_col(position = "dodge") +<br>
-									  scale_fill_manual(name = "Casual vs. Member",values=c("#E1BE6A",<br>
-																							"#40B0A6")) +<br>
-									  scale_y_continuous(labels = comma) +<br>
-									  labs(title = "Average Duration Per Weekday",subtitle="Breakdown between casual and annual membership",caption="Sourced from Divvy")+<br>
-									  xlab("Weekday") +<br>
-									  ylab("Duration (in Seconds)")<br>
-									  <br>
-									ggsave("Average Duration Per Weekday.png")<br>
-									<br>
-									Also looked to see what stations were most likely to be used by members and casual riders.<br>
-									<br>
-									start_plot <- tripdata_v2 %>% <br>
-									  group_by(member_casual) %>% <br>
-									  count(start_station_name, sort = TRUE)<br>
-									  <br>
-									head(start_plot,20)<br>
-									<br>
-									Reviewed what type of bike is most commonly used by members vs. casual.<br>
-									<br>
-									tripdata_v2 %>%<br>
-									  group_by(member_casual) %>% <br>
-									  count(rideable_type, sort = TRUE)<br>
-									  <br>
-									tripdata_v2 %>% <br>
-									  drop_na(rideable_type) %>% <br>
-									  ggplot(aes(rideable_type,fill=member_casual)) + geom_bar(stat="count") +<br>
-									  facet_wrap(~member_casual) +<br>
-									  theme(axis.text.x = element_text(angle=30,size = 12)) +<br>
-									  scale_fill_manual(guide="none",values=c("#E1BE6A",<br>
-																			  "#40B0A6")) +<br>
-									  scale_y_continuous(labels = comma) +<br>
-									  labs(title = "Most Popular Types of Bikes",subtitle="Breakdown between Casual and Annual Membership",caption="Sourced from Divvy")+<br>
-									  xlab("Type of Bike") +<br>
-									  ylab("Number of Rides")<br>
-									  <br>
-									ggsave("Types of Bikes.png")<br>
-									<br>
-									Visualizing total rides over time<br>
-									<br>
-									date_count <- tripdata_v2 %>% <br>
-									  count(date)<br>
-									  <br>
-									ggplot(data = date_count) + geom_smooth(mapping = aes(x=date_count$date,y=n,)) +<br>
-									  ylim(0,15000) +<br>
-									  labs(title = "Total Rides Over Time",subtitle="2 Years of Cyclistic Riding",caption="Sourced from Divvy")+<br>
-									  xlab("Date") +<br>
-									  ylab("Number of Rides")<br>
-									  <br>
-									ggsave("Total Rides Over Time.png")<br>
-									<br>
-									<h2>Conclusions</h2>
-									Please see the above presentation that shows conclusions, plots, visualizations, etc.<br><br><br>
+									<h1 id="introduction">Introduction</h1>
+<p>In this study, we have been tasked with analyzing a fictional company's data (Cyclistic). Our stakeholders have tasked us with identifying how &quot;casual riders&quot; (Those who have not purchased and annual membership) differ from &quot;members&quot; (Those who have purchased an annual membership). Further, we are tasked with determining our top 3 marketing strategies based on our insights.
+Source data is linked in the final presentation above.</p><br>
+<p>The following is my accounting of how the problem was approached:</p><br>
+<p>Ask:<br>
+-What data do we have available for the rides and riders?<br>
+-How do member and casual riders interact with Cyclistic bikes?<br>
+-What marketing strategies should we employ to attract Casual riders into purchasing Memberships?</p>
+<p>Steps:<br>
+-Downloaded sample data and explored.<br>
+--Findings: Table consisting of ride data including - rideID, start Station, Start Coordinates, End Station, End Coordinates, Start/End Times
+Broken down monthly.<br>
+Table for Q1 which includes the same information but much larger amounts but the data isn't available after Q1 2020.<br></p><br>
+<p>Action Item:<br>
+Attempted to join in BigQuery. CSV files are too large for upload. Will need to handle locally.<br></p>
+<h2 id="rstudio-work">RStudio Work</h2>
+<pre><code><code><div>tripdata &lt;- union(`202004.divvy.tripdata`,`202005.divvy.tripdata`)
+View(tripdata)
+
+tripdata &lt;- combine(`202004.divvy.tripdata`,`202005.divvy.tripdata`)
+
+Installed packages needed
+
+install.packages(&quot;tidyverse&quot;)
+library(tidyverse)
+install.packages(&quot;gdata&quot;)
+library(gdata)
+library(lubridate)
+library(ggplot2)
+library(scales)
+
+Using gdata package and combine() created variable for all trip data in past 2 years.
+
+tripdata &lt;- combine(`202004.divvy.tripdata`,`202005.divvy.tripdata`,`202006.divvy.tripdata`,`202007.divvy.tripdata`,`202008.divvy.tripdata`,`202009.divvy.tripdata`,`202010.divvy.tripdata`,`202011.divvy.tripdata`,`202012.divvy.tripdata`,`202101.divvy.tripdata`,`202102.divvy.tripdata`,`202103.divvy.tripdata`,`202104.divvy.tripdata`,`202105.divvy.tripdata`,`202106.divvy.tripdata`,`202107.divvy.tripdata`,`202108.divvy.tripdata`,`202109.divvy.tripdata`,`202110.divvy.tripdata`,`202111.divvy.tripdata`,`202112.divvy.tripdata`,Divvy_Trips_2020_Q1)
+
+head(tripdata)
+View(tripdata)
+</div></code></code></pre>
+<h2 id="cleaning">Cleaning</h2>
+<p>Using n_occur to search rideID for duplicates.</p>
+<pre><code><code><div>n_occur &lt;- data.frame(table(tripdata$ride_id))
+n_occur[n_occur$Freq &gt; 1,]
+</div></code></code></pre>
+<p>Found significant number of duplicates. Utilized distinct() to remove duplicate ride_id from table.</p>
+<pre><code><code><div>tripdata %&gt;%
+distinct(tripdata$ride_id, keep_all = TRUE)
+</div></code></code></pre>
+<p>Checked unique values in rideable_type and member_casual to confirm no typos. No typos found.</p>
+<pre><code><code><div>tripdata %&gt;%
+count(rideable_type)
+</div></code></code></pre>
+<p>Searched for outliers.</p>
+<p>Created quick bar chart with starting station name. Found 785465 items that do not have a start_station_name. Confirmed with start_station_id. 702505 blank, 83583 . This represents 8.6% of the items. Would ask for clarification as to how we would like to proceed in this instance. Does not appear to impact the scope of our analysis however brings reliability of the data into question. Will impact analysis if we look at starting stations for members vs. casual.</p>
+<p>Confirmed above with end stationID also.</p>
+<pre><code><code><div>tripdata %&gt;%
+count(member_casual)
+
+str(Cleaned_Trip_Data)
+
+ggplot(data = tripdata) + geom_bar(mapping = aes(member_casual))
+ggplot(data = tripdata) + geom_bar(mapping = aes(start_station_name))
+
+tripdata %&gt;%
+count(tripdata$start_station_name) %&gt;%
+ungroup() %&gt;%
+arrange(desc(n))
+ggplot(data = tripdata) + geom_bar(mapping = aes(start_station_id))
+
+tripdata %&gt;%
+count(tripdata$start_station_id) %&gt;%
+ungroup() %&gt;%
+arrange(desc(n))
+
+ggplot(data = tripdata) + geom_bar(mapping = aes(end_station_id))
+
+tripdata %&gt;%
+count(tripdata$end_station_id) %&gt;%
+ungroup() %&gt;%
+arrange(desc(n))
+</div></code></code></pre>
+<p>Removing Duplicates</p>
+<pre><code><code><div>tripdata[!duplicated(tripdata), ]
+
+install.packages('parallel')
+library(parallel)
+
+tripdataclean &lt;- tripdata %&gt;% distinct(tripdata$ride_id, .keep_all = TRUE)
+</div></code></code></pre>
+<p>Saved Clean .csv</p>
+<pre><code><code><div>write.csv(tripdataclean,&quot;Cleaned Trip Data.csv&quot;, row.names = FALSE)
+</div></code></code></pre>
+<h2 id="analyzing-data">Analyzing Data</h2>
+<p>Created &quot;Duration&quot; column, calculated average duration, and found difference between casual and member riders.</p>
+<pre><code><code><div>Cleaned_Trip_Data$duration &lt;- ridelength
+
+summarize(Cleaned_Trip_Data,mean(Cleaned_Trip_Data$duration))
+
+`mean(Cleaned_Trip_Data$duration)`
+
+1 1422.822 secs
+
+Cleaned_Trip_Data$member_casual: casual
+[1] 2218.434
+Cleaned_Trip_Data$member_casual: member
+[1] 831.4539
+</div></code></code></pre>
+<p>Significant difference in average duration between casual and member</p>
+<p>Created variable with casual and with member</p>
+<pre><code><code><div>casual_only &lt;- Cleaned_Trip_Data[Cleaned_Trip_Data$member_casual == 'casual',]
+member_only &lt;- Cleaned_Trip_Data[Cleaned_Trip_Data$member_casual == 'member',]
+
+</div></code></code></pre>
+<p>Counting most common start station</p>
+<pre><code><code><div>casual_only %&gt;%
+count(start_station_name, sort = TRUE)
+</div></code></code></pre>
+<p>Returned the following:</p>
+<p>1 NA 355924<br>
+2 Streeter Dr &amp; Grand Ave 92486<br>
+3 Millennium Park 52250<br>
+4 Michigan Ave &amp; Oak St 43196<br>
+5 Lake Shore Dr &amp; Monroe St 39757<br>
+6 Theater on the Lake 36105<br>
+7 Shedd Aquarium 32908<br>
+8 Indiana Ave &amp; Roosevelt Rd 29769<br>
+9 Wells St &amp; Concord Ln 29459<br>
+10 Clark St &amp; Elm St 27928<br></p>
+<p>The 1 station is Streeter Drive &amp; Grand Ave on Navy Pier. This is a highly touristed area.</p>
+<p>Continued looking at the top 5 stations. Found all of the top 10 are within a few blocks of Lake Michigan.</p>
+<p>Next, checked end_station_name</p>
+<pre><code><code><div>casual_only %&gt;%
+count(end_station_name, sort = TRUE)
+</div></code></code></pre>
+<p>Return:</p>
+<p>1 NA 414226 <br>
+2 Streeter Dr &amp; Grand Ave 97280 <br>
+3 Millennium Park 54130<br>
+4 Michigan Ave &amp; Oak St 44994<br>
+5 Theater on the Lake 39321<br>
+6 Lake Shore Dr &amp; Monroe St 37662<br>
+7 Lake Shore Dr &amp; North Blvd 31381<br>
+8 Indiana Ave &amp; Roosevelt Rd 29440<br>
+9 Shedd Aquarium 29386<br>
+10 Wells St &amp; Concord Ln 29103<br></p>
+<p>Compared Results to top member start stations.</p>
+<pre><code><code><div>member_only %&gt;%
+count(start_station_name, sort = TRUE)
+</div></code></code></pre>
+<p>1 NA 429541<br>
+2 Clark St &amp; Elm St 45259<br>
+3 Kingsbury St &amp; Kinzie St 40202<br>
+4 Wells St &amp; Concord Ln 39267<br>
+5 Dearborn St &amp; Erie St 35510<br>
+6 Wells St &amp; Elm St 34927<br>
+7 St. Clair St &amp; Erie St 34891<br>
+8 Wells St &amp; Huron St 34118<br>
+9 Broadway &amp; Barry Ave 33607<br>
+10 Desplaines St &amp; Kinzie St 31630<br></p>
+<p>These locations are significantly further inland and in the urban center.</p>
+<p>As before checked end_station_name to confirm findings, and checked station_id for member_only for comparison.</p>
+<pre><code><code><div>member_only %&gt;%
+count(end_station_name, sort = TRUE)
+
+member_only %&gt;%
+count(start_station_id, sort = TRUE)
+</div></code></code></pre>
+<p>This showed some issues with station names vs. station ID:<br>
+1 NA 429813<br>
+2 TA1307000039 25771<br>
+3 KA1503000043 24407<br>
+4 TA1308000050 24397<br>
+5 KA1504000135 21694<br>
+6 331 21456<br>
+7 13045 20476<br>
+8 TA1306000012 19942<br>
+9 13016 19719<br>
+10 176 19488<br></p>
+<p>Clearly there has been a naming convention change in the past 2 years.</p>
+<p>Will use start_station_name and not start_station_id</p>
+<p>Reviewed top stations in general</p>
+<pre><code><code><div>Cleaned_Trip_Data %&gt;%
+count(start_station_name, sort = TRUE)
+</div></code></code></pre>
+<p>Return:
+1 NA 785465<br>
+2 Streeter Dr &amp; Grand Ave 118081<br>
+3 Clark St &amp; Elm St 73187<br>
+4 Wells St &amp; Concord Ln 68726<br>
+5 Millennium Park 66521<br>
+6 Theater on the Lake 66448<br>
+7 Michigan Ave &amp; Oak St 66123<br>
+8 Wells St &amp; Elm St 60221<br>
+9 Clark St &amp; Armitage Ave 56645<br>
+10 Dearborn St &amp; Erie St 56446<br></p>
+<p>Next, looked at type of bike to see if there are any correlations</p>
+<pre><code><code><div>Cleaned_Trip_Data %&gt;%
+count(rideable_type, sort = TRUE)
+
+1 classic_bike 3321644
+2 docked_bike 3278456
+3 electric_bike 2536437
+
+casual_only %&gt;%
+count(rideable_type, sort = TRUE)
+
+1 docked_bike 1458347
+2 classic_bike 1277976
+3 electric_bike 1159232
+
+member_only %&gt;%
+count(rideable_type, sort = TRUE)
+
+1 classic_bike 2043668
+2 docked_bike 1820109
+3 electric_bike 1377205
+</div></code></code></pre>
+<p>Utilized tableau public to visualize most common stations to see if there is a geographic correlation.</p>
+<p>Additional factors evaluated:</p>
+<pre><code><code><div>tripdata &lt;- Cleaned_Trip_Data
+
+tripdata$date &lt;- as.Date(tripdata$started_at)
+tripdata$month &lt;- format(as.Date(tripdata$date), &quot;%m&quot;)
+tripdata$day &lt;- format(as.Date(tripdata$date), &quot;%d&quot;)
+tripdata$year &lt;- format(as.Date(tripdata$date), &quot;%y&quot;)
+tripdata$day_of_week &lt;- format(as.Date(tripdata$date), &quot;%A&quot;)
+
+tripdata$ride_length &lt;- difftime(tripdata$ended_at,tripdata$started_at)
+</div></code></code></pre>
+<p>Converted ride_length to numeric and calculated aggregates</p>
+<pre><code><code><div>str(tripdata)
+is.factor(tripdata$ride_length)
+tripdata$ride_length &lt;- as.numeric(as.character(tripdata$ride_length))
+is.numeric(tripdata$ride_length)
+
+tripdata_v2 &lt;- tripdata[!(tripdata$start_station_name == &quot;HQ QR&quot; | tripdata$ride_length&lt;0),]
+
+str(tripdata_v2)
+
+mean(tripdata_v2$ride_length, na.rm=TRUE)
+median(tripdata_v2$ride_length, na.rm=TRUE)
+min(tripdata_v2$ride_length, na.rm=TRUE)
+max(tripdata_v2$ride_length, na.rm=TRUE)
+
+summary(tripdata_v2$ride_length, na.rm=TRUE)
+
+aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual, FUN = mean)
+aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual, FUN = median)
+aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual, FUN = max)
+aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual, FUN = min)
+
+aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual + tripdata_v2$day_of_week, FUN = mean)
+
+tripdata_v2$day_of_week &lt;- ordered(tripdata_v2$day_of_week, levels=c(&quot;Sunday&quot;, &quot;Monday&quot;, &quot;Tuesday&quot;, &quot;Wednesday&quot;, &quot;Thursday&quot;, &quot;Friday&quot;, &quot;Saturday&quot;))
+
+breakdown_day &lt;- aggregate(tripdata_v2$ride_length ~ tripdata_v2$member_casual + tripdata_v2$day_of_week, FUN = mean)
+</div></code></code></pre>
+<p>Viz for day breakdown for member and causal riders.</p>
+<pre><code><code><div>tripdata_v2 %&gt;%
+drop_na(member_casual) %&gt;%
+mutate(weekday = wday(started_at, label = TRUE)) %&gt;%
+group_by(member_casual, weekday) %&gt;%
+summarise(number_of_rides = n()
+,average_duration = mean(ride_length)) %&gt;%
+arrange(member_casual, weekday) %&gt;%
+ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +
+geom_col(position = &quot;dodge&quot;) +
+scale_fill_manual(name = &quot;&quot;,values=c(&quot;#E1BE6A&quot;,
+&quot;#40B0A6&quot;)) +
+scale_y_continuous(labels = comma) +
+labs(title = &quot;Total Rides Per Weekday&quot;,subtitle=&quot;Breakdown between Casual and Annual Membership&quot;,caption=&quot;Sourced from Divvy&quot;)+
+xlab(&quot;Weekday&quot;) +
+ylab(&quot;Number of Rides&quot;)
+
+ggsave(&quot;Total Rides Per Weekday.png&quot;)
+</div></code></code></pre>
+<p>Viz for average duration broken down the same way.</p>
+<pre><code><code><div>tripdata_v2 %&gt;%
+drop_na(member_casual) %&gt;%
+mutate(weekday = wday(started_at, label = TRUE)) %&gt;%
+group_by(member_casual, weekday) %&gt;%
+summarise(number_of_rides = n()
+,average_duration = mean(ride_length)) %&gt;%
+arrange(member_casual, weekday) %&gt;%
+ggplot(aes(x = weekday, y = average_duration, fill = member_casual)) +
+geom_col(position = &quot;dodge&quot;) +
+scale_fill_manual(name = &quot;Casual vs. Member&quot;,values=c(&quot;#E1BE6A&quot;,
+&quot;#40B0A6&quot;)) +
+scale_y_continuous(labels = comma) +
+labs(title = &quot;Average Duration Per Weekday&quot;,subtitle=&quot;Breakdown between casual and annual membership&quot;,caption=&quot;Sourced from Divvy&quot;)+
+xlab(&quot;Weekday&quot;) +
+ylab(&quot;Duration (in Seconds)&quot;)
+
+ggsave(&quot;Average Duration Per Weekday.png&quot;)
+</div></code></code></pre>
+<p>Also looked to see what stations were most likely to be used by members and casual riders.</p>
+<pre><code><code><div>start_plot &lt;- tripdata_v2 %&gt;%
+group_by(member_casual) %&gt;%
+count(start_station_name, sort = TRUE)
+
+head(start_plot,20)
+</div></code></code></pre>
+<p>Reviewed what type of bike is most commonly used by members vs. casual.</p>
+<pre><code><code><div>tripdata_v2 %&gt;%
+group_by(member_casual) %&gt;%
+count(rideable_type, sort = TRUE)
+
+tripdata_v2 %&gt;%
+drop_na(rideable_type) %&gt;%
+ggplot(aes(rideable_type,fill=member_casual)) + geom_bar(stat=&quot;count&quot;) +
+facet_wrap(~member_casual) +
+theme(axis.text.x = element_text(angle=30,size = 12)) +
+scale_fill_manual(guide=&quot;none&quot;,values=c(&quot;#E1BE6A&quot;,
+&quot;#40B0A6&quot;)) +
+scale_y_continuous(labels = comma) +
+labs(title = &quot;Most Popular Types of Bikes&quot;,subtitle=&quot;Breakdown between Casual and Annual Membership&quot;,caption=&quot;Sourced from Divvy&quot;)+
+xlab(&quot;Type of Bike&quot;) +
+ylab(&quot;Number of Rides&quot;)
+
+ggsave(&quot;Types of Bikes.png&quot;)
+</div></code></code></pre>
+<p>Visualizing total rides over time</p>
+<pre><code><code><div>date_count &lt;- tripdata_v2 %&gt;%
+count(date)
+
+ggplot(data = date_count) + geom_smooth(mapping = aes(x=date_count$date,y=n,)) +
+ylim(0,15000) +
+labs(title = &quot;Total Rides Over Time&quot;,subtitle=&quot;2 Years of Cyclistic Riding&quot;,caption=&quot;Sourced from Divvy&quot;)+
+xlab(&quot;Date&quot;) +
+ylab(&quot;Number of Rides&quot;)
+
+ggsave(&quot;Total Rides Over Time.png&quot;)
+</div></code></code></pre>
+<h1 id="conclusions">Conclusions</h1>
+<p>Please see the above presentation that shows conclusions, plots, visualizations, etc.</p>
 
 				<!-- Footer -->
 				<footer id="footer">

@@ -48,103 +48,77 @@
 										<h5>Winter Olympic Draft Utilizing Excel, SQl, R, and Tableau</h5>
 									</header>
 									<div class='tableauPlaceholder' id='viz1644006393502' style='position: relative'><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='OlympicDraftPicks&#47;Dashboard1' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1644006393502');                    var vizElement = divElement.getElementsByTagName('object')[0];                    if ( divElement.offsetWidth > 800 ) { vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';} else if ( divElement.offsetWidth > 500 ) { vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';} else { vizElement.style.width='100%';vizElement.style.height='1277px';}                     var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
-									<br><h2>Introduction</h2>
-									<p>Our family runs an Olympic Draft - similar to fantasy football or baseball - for each Olympic cycle. The purpose of this case study is to identify trends in medal count / point value to create a predictive analysis of which teams should be selected in which order.</p>
-									<h2>Assumptions</h2>
-                                        <p>Point Value - Each medal is worth the following: <br>
-                                            Gold - 6 points <br>
-                                            Silver - 4 points <br>
-                                            Bronze - 3 points <br>
-                                            For analysis reviewing the last 10 Olympic cycles. <br>
-                                            Winter Olympics only. <br>
-                                            <br>
-                                            All GDP numbers are in USD <br>
-                                            <br>
-                                            My initial hypothesis is that larger GDP per capita and size of contingency are correlated with better points values for the Olympic draft.
-                                            <br><br> 
-                                            All Data pulled from the following Datasets: <br>
-                                            Winter Olympics Medal Count - <a href=https://www.kaggle.com/ramontanoeiro/winter-olympic-medals-1924-2018>kaggle.com/ramontanoeiro/winter-olympic-medals-1924-2018</a>
-                                            <br>
-                                            Worldwide GDP History - <a href=https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?end=2020&start=1984&view=chart>data.worldbank.org</a><br><br>
-                                            GDP data was a wide format when downloaded from the World Bank. Opened file in Excel, removed irrelevant years, and saved as .csv.<br><br>
-                                            <h2>Pre-Processing in RStudio</h2><br>
-                                            In RStudio utilized the following code to convert wide data to long:<br>
-
-                                            install.packages("tidyverse")<br>
-                                            library(tidyverse)<br>
-                                            library(tidyr)<br><br>
-
-                                            Converting to long data from wide<br>
-                                            long <- newgdpdata %>%<br>
-                                            gather(year, value, -c("Country Name","Country Code"))<br>
-
-                                            Completed these same steps for GDP per capita.<br><br>
-                                            <h2>Primary Key Creation Using SQL</h2>
-                                            Differing types of data between these two databases and there is not a good primary key to utilize. Used CONCAT to create a new key column in both combining the year and country code to create a unique identifier that matches between the datasets.<br>
-
-SELECT *,<br>
-CONCAT(year,countrycode) AS "Primary" FROM medalcount<br>
-
-Saved as new table "medalswprimary"<br>
-
-Primary Key Creation Using Excel<br>
-
-Utilized Excel to concatenate the primary key for GDP and GDP per capita utilizing:<br>
-
-=CONCAT()<br>
-
-Saved as new csv files.<br>
-
-Uploaded all to SSMS.<br><br>
-
-<h2> Contingent Size</h2> 
-Next need to add contingent size. <br>
-
-No existing database had this information.<br>
-Pulled data from Wikipedia.<br><br>
-
-2018 - No problem, pulled existing table.<br>
-2014 - Table was not created. Pulled information into excel, needed to convert the country NAMES into the country CODES.<br><br>
-
-Created excel document with all ISO Country Codes.<br>
-Items were broken down between both formats, either 2 or 3 letters. Example:<br><br>
-
-AF/AFG<br><br>
-
-Used =RIGHT(C1,3) to extract only the country codes.<br><br>
-
-For the country participants list in 2014, copied source data from Wikipedia and pasted as plain text (not HTML).<br><br>
-
-Items then showed as:<br>
-Albania (2)<br><br>
-
-Broke cells using "(" as the delimiter to separate country names and numbers, then find and replace to remove all parenthesis from this data.<br><br>
-
-We were left with:<br>
-Albania 2<br><br>
-
-Used VLOOKUP to create correct country code:<br>
-=VLOOKUP(A1,'Country Codes'!A:D,4,FALSE)<br><br>
-
-This worked for almost all items with a few exceptions that didn't match. Based on nature and size of items, manually checked on which items were incorrect.<br><br>
-
-Chinese Taipei 3 #N/A<br>
-Great Britain 56 #N/A<br>
-Virgin Islands 1 #N/A<br><br>
-
-This was relatively easy to fix by adding corresponding line items to the Country Codes sheet to account for future variability in the country code names.<br><br>
-
-Copied over to main sheet.<br><br>
-
-Repeated this process for additional years.<br><br>
-
-Once complete created sheet with all 10 cycles of data. In total there are 731 items.<br><br>
-<h2>Data Cleaning</h2>
-Filtered by Country Code since this was an issue early on.<br><br>
-
-Found a number of N/A Country Codes:<br><br>
-
-Serbia and Montenegro<br>
+									<h1 id="introduction">Introduction</h1>
+<p>Our family runs an Olympic Draft - similar to fantasy football or baseball - for each Olympic cycle. The purpose of this case study is to identify trends in medal count / point value to create a predictive analysis of which teams should be selected in which order.</p>
+<h2 id="assumptions">Assumptions</h2>
+<ul>
+<li>Point Value - Each medal is worth the following:<br>
+Gold - 6 points<br>
+Silver - 4 points<br>
+Bronze - 3 points<br></li>
+<li>For analysis reviewing the last 10 Olympic cycles.<br></li>
+<li>Winter Olympics only.</li>
+<li>All GDP numbers are in USD</li>
+</ul>
+<p>My initial hypothesis is that larger GDP per capita and size of contingency are correlated with better points values for the Olympic draft.</p>
+<p>All Data pulled from the following Datasets:
+Winter Olympics Medal Count - <a href="https://kaggle.com/ramontanoeiro/winter-olympic-medals-1924-2018">Kaggle Dataset</a><br>
+Worldwide GDP History - <a href="data.worldbank.org">World Bank</a></p>
+<h2 id="data-exploration">Data Exploration</h2>
+<p>GDP data was a wide format when downloaded from the World Bank. Opened file in Excel, removed irrelevant years, and saved as .csv.</p>
+<h2 id="pre-processing-in-rstudio">Pre-Processing in RStudio</h2>
+<p>In RStudio utilized the following code to convert wide data to long:</p>
+<pre><code><code><div>install.packages(&quot;tidyverse&quot;)
+library(tidyverse)
+library(tidyr)
+</div></code></code></pre>
+<p>Converting to long data from wide</p>
+<pre><code><code><div>long &lt;- newgdpdata %&gt;%
+gather(year, value, -c(&quot;Country Name&quot;,&quot;Country Code&quot;))
+</div></code></code></pre>
+<p>Completed these same steps for GDP per capita.</p>
+<h2 id="primary-key-creation-using-sql">Primary Key Creation Using SQL</h2>
+<p>Differing types of data between these two databases and there is not a good primary key to utilize. Used CONCAT to create a new key column in both combining the year and country code to create a unique identifier that matches between the datasets.</p>
+<pre><code class="language-SELECT"><code><div>CONCAT(year,countrycode) AS &quot;Primary&quot; FROM medalcount
+</div></code></code></pre>
+<p>Saved as new table &quot;medalswprimary&quot;</p>
+<h2 id="primary-key-creation-using-excel">Primary Key Creation Using Excel</h2>
+<p>Utilized Excel to concatenate the primary key for GDP and GDP per capita utilizing:</p>
+<pre><code><code><div>=CONCAT()
+</div></code></code></pre>
+<p>Saved as new csv files.
+Uploaded all to SSMS.</p>
+<h2 id="contingent-size">Contingent Size</h2>
+<p>Next need to add contingent size.
+No existing database had this information.
+Pulled data from Wikipedia.</p>
+<p>2018 - No problem, pulled existing table.
+2014 - Table was not created. Pulled information into excel, needed to convert the country NAMES into the country <em>codes</em>.</p>
+<p>Created excel document with all ISO Country Codes.
+Items were broken down between both formats, either 2 or 3 letters. Example:</p>
+<p>AF/AFG</p>
+<p>Used =RIGHT(C1,3) to extract only the country codes.</p>
+<p>For the country participants list in 2014, copied source data from Wikipedia and pasted as plain text (not HTML).</p>
+<p>Items then returned as:
+Albania (2)</p>
+<p>Broke cells using &quot;(&quot; as the delimiter to separate country names and numbers, then find and replace to remove all parenthesis from this data.</p>
+<p>We were left with:
+Albania 2</p>
+<p>Used VLOOKUP to create correct country code:</p>
+<pre><code><code><div>=VLOOKUP(A1,'Country Codes'!A:D,4,FALSE)
+</div></code></code></pre>
+<p>This worked for almost all items with a few exceptions that didn't match. Based on nature and size of items, manually checked on which items were incorrect.</p>
+<p>Chinese Taipei 3 #N/A <br>
+Great Britain 56 #N/A <br>
+Virgin Islands 1 #N/A<br></p>
+<p>This was relatively easy to fix by adding corresponding line items to the Country Codes sheet to account for future variability in the country code names.</p>
+<p>Copied over to main sheet.</p>
+<p>Repeated this process for additional years.</p>
+<p>Once complete created sheet with all 10 cycles of data. In total there are 731 items.</p>
+<h2 id="data-cleaning">Data Cleaning</h2>
+<p>Filtered by Country Code since this was an issue early on.</p>
+<p>Found a number of N/A Country Codes:</p>
+<p>Serbia and Montenegro<br>
 FR Yugoslavia<br>
 FR Yugoslavia<br>
 Czechoslovakia<br>
@@ -159,201 +133,174 @@ Czechoslovakia<br>
 East Germany<br>
 West Germany<br>
 Soviet Union<br>
-Yugoslavia<br><br>
-
-Appears to be issues with older codes, Soviet Union block countries especially. Referred to historical data and filled in these country codes manually. Codes found on iso.org.<br><br>
-
-Filled all in, one issue that was more difficult is the Unified Team of 1992 and Soviet Union. For simplicity used code for Russia - GDP data does not recognize the Soviet Union, breaks the union down to constituent countries. Using Russia is a reasonable figure for approximations and analysis to attempt to find trends.<br><br>
-
-Next, created a filter and scanned through the country names to ensure there were no obvious outliers. Found the following:
-<br><br>
-Olympic Athletes from Russia[b] -- This is a one-off due to the recent PED controversy for Russia. Amended the Country Code to RUS to more accurately reflect the trends.
-<br><br>
-Korea[a] and South Korea -- both were listed in 2018. This is due to the unified Korean team that competed. This is an outlier and does not warrant standing on its own as the 2022 Olympics will not have this team (as of this writing on 01/14/2022). Removed the COR country code item.
-<br><br>
-Confirmed Primary Key was created for all entries.
-<br><br>
-Ran minimum and maximum years, no unexpected values.<br>
-Ran minimum and maximum Athlete numbers, no unexpected values.<br>
-Confirmed length of columns for Country Code and Primary Key.<br>
-<br>
-No NULL values in any columns. Ready to import to SSMS.<br><br>
-<h2>SQL Work</h2>
-We now have 4 tables, joined together to create the master table:
-<br><br>
-SELECT [OlympicDraft].[dbo].[medalswprimary].[year], hostcountry, hostcity, [OlympicDraft].[dbo].[medalswprimary].[countryname], [OlympicDraft].[dbo].[medalswprimary].[countrycode], Gold, Silver, Bronze, [OlympicDraft].[dbo].[gdpwprimary].[value] AS GDP, [OlympicDraft].[dbo].[convertedgdpdatapercapita].[gdppercapita], Atheletes<br>
-FROM medalswprimary<br>
-INNER JOIN gdpwprimary<br>
-ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[gdpwprimary].[yearcountry] INNER JOIN contingencycleaned<br>
-ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[contingencycleaned].[YearCountry]<br>
-INNER JOIN convertedgdpdatapercapita<br>
-ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[convertedgdpdatapercapita].[Year_Country]<br>
+Yugoslavia<br></p>
+<p>Appears to be issues with older codes, Soviet Union block countries especially. Referred to historical data and filled in these country codes manually. Codes found on <a href="http://iso.org">iso.org</a>.</p>
+<p>Filled all in, one issue that was more difficult is the Unified Team of 1992 and Soviet Union. For simplicity used code for Russia - GDP data does not recognize the Soviet Union, breaks the union down to constituent countries. Using Russia is a reasonable figure for approximations and analysis to attempt to find trends.</p>
+<p>Next, created a filter and scanned through the country names to ensure there were no obvious outliers. Found the following:</p>
+<p>Olympic Athletes from Russia[b] -- This is a one-off due to the recent PED controversy for Russia. Amended the Country Code to RUS to more accurately reflect the trends.</p>
+<p>Korea[a] and South Korea -- both were listed in 2018. This is due to the unified Korean team that competed. This is an outlier and does not warrant standing on its own as the 2022 Olympics will not have this team (as of this writing on 01/14/2022). Removed the COR country code item.</p>
+<p>Confirmed Primary Key was created for all entries.</p>
+<p>Ran minimum and maximum years, no unexpected values.
+Ran minimum and maximum Athlete numbers, no unexpected values.
+Confirmed length of columns for Country Code and Primary Key.</p>
+<p>No NULL values in any columns. Ready to import to SSMS.</p>
+<h2 id="sql-work">SQL Work</h2>
+<p>We now have 4 tables, joined together to create the master table:</p>
+<pre><code><code><div>SELECT [OlympicDraft].[dbo].[medalswprimary].[year], hostcountry, hostcity, [OlympicDraft].[dbo].[medalswprimary].[countryname], [OlympicDraft].[dbo].[medalswprimary].[countrycode], Gold, Silver, Bronze, [OlympicDraft].[dbo].[gdpwprimary].[value] AS GDP, [OlympicDraft].[dbo].[convertedgdpdatapercapita].[gdppercapita], Atheletes
+FROM medalswprimary
+INNER JOIN gdpwprimary
+ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[gdpwprimary].[yearcountry] INNER JOIN contingencycleaned
+ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[contingencycleaned].[YearCountry]
+INNER JOIN convertedgdpdatapercapita
+ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[convertedgdpdatapercapita].[Year_Country]
 ORDER BY year DESC
-<br><br>
-This returned the following table:
-<br><br>
-<img src="images/table1.png" alt="Joined Table">
-<br><br>
-Performed cleaning tasks to ensure no outliers:
-<br><br>
-Checked GDP numbers:<br>
-1992 North Korea shows as null. Updated this row with information from countryeconomy.com - $12,458,000,000
-<br><br>
-Checked GDP per capita:
-<br><br>
-1992 North Korea again missing. Updated this to $595, utilized same source.
-<br><br>
-UPDATE [OlympicDraft].[dbo].[gdpwprimary]<br>
-SET [OlympicDraft].[dbo].[gdpwprimary].[value] = 12458000000<br>
-WHERE [OlympicDraft].[dbo].[gdpwprimary].[year_country] = '1992PRK'<br>
-<br>
-UPDATE [OlympicDraft].[dbo].[convertedgdpdatapercapita]<br>
-SET [OlympicDraft].[dbo].[convertedgdpdatapercapita].[gdppercapita] = 595<br>
-WHERE [OlympicDraft].[dbo].[convertedgdpdatapercapita].[year_country] = '1992PRK'<br>
-<br>
-Liechtenstein showed as an outlier with GDP per capita at 180,366 in 2018. Confirmed this number is correct per the World Bank, appears Liechtenstein does not often have atheletes in the winter olympics. Performing a quick SQL search to verify this shows that they fielded 3 atheletes in 2018, with a Bronze medal being won. Initially this appears to be a good ratio for win/loss.
-<br><br>
-Finally, need to create a column that shows the total point value for each of these rows based on the above formula (6 points for Gold, 4 points for Silver, 3 points for Bronze).
-<br><br>
-Updated query as follows:
-<br><br>
-SELECT [OlympicDraft].[dbo].[medalswprimary].[year], hostcountry, hostcity, [OlympicDraft].[dbo].[medalswprimary].[countryname], [OlympicDraft].[dbo].[medalswprimary].[countrycode], Gold, Silver, Bronze, [OlympicDraft].[dbo].[gdpwprimary].[value] AS GDP, [OlympicDraft].[dbo].[convertedgdpdatapercapita].[gdppercapita], Atheletes,
-(Gold6) + (Silver4) + (Bronze*3) AS 'TotalPoints' FROM [OlympicDraft].[dbo].[medalswprimary] INNER JOIN gdpwprimary ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[gdpwprimary].[yearcountry]
-<br>INNER JOIN contingencycleaned ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[contingencycleaned].[YearCountry] INNER JOIN convertedgdpdatapercapita ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[convertedgdpdatapercapita].[YearCountry]
-<br>ORDER BY [OlympicDraft].[dbo].[convertedgdpdatapercapita].[year]
-<br><br>
-Spot checked, calculating correctly.
-<br><br>
-Saved result as winterolympicsstudy.csv.
-<br><br>
-We can now see that all relevant information is returned in the following table:
-<br><br>
-<img src="images/table2.png" alt="Calculated SQL Table"><br><br>
+</div></code></code></pre>
+<p>This returned the following table:</p>
+<p><img src="images/table1.png" alt="Initial Table"></p>
+<p>Performed cleaning tasks to ensure no outliers:</p>
+<p>Checked GDP numbers:
+1992 North Korea shows as null. Updated this row with information from <a href="http://countryeconomy.com">countryeconomy.com</a> - $12,458,000,000</p>
+<p>Checked GDP per capita:</p>
+<p>1992 North Korea again missing. Updated this to $595, utilized same source.</p>
+<pre><code><code><div>UPDATE [OlympicDraft].[dbo].[gdpwprimary]
+SET [OlympicDraft].[dbo].[gdpwprimary].[value] = 12458000000
+WHERE [OlympicDraft].[dbo].[gdpwprimary].[year_country] = '1992PRK'
 
-<h2>RStudio Work</h2>
-To continue analysis, opened this CSV in RStudio.
-<br><br>
-install.packages("tidyverse")<br>
-library(tidyverse)<br>
-library(ggplot2)<br>
-install.packages("forecast")<br>
-library(forecast)<br>
-install.packages("GGally")<br>
-library(GGally)<br>
-install.packages("modelr")<br>
-library(modelr)<br>
-<br>
-View(winterolympicstudy)<br>
-<br>
-Finding correlation between gdppercapita and Total_Points<br>
-ggplot(data = winterolympicstudy) + geompoint(aes(x=gdppercapita,y=TotalPoints,color=countryname)) + facetwrap(~country_name)<br>
-<br>
-cor(winterolympicstudy$gdppercapita, winterolympicstudy$Total_Points, method = c("pearson"))<br>
-<br>
-Result is .347, showing a moderate correlation between these two figures.<br>
-<br>
-Looked next at GDP vs. TotalPoints ggplot(data = winterolympicstudy) + geompoint(aes(x=GDP,y=TotalPoints,color=countryname))+<br>
-facetwrap(~countryname)<br>
-<br>
-cor(winterolympicstudy$GDP, winterolympicstudy$Total_Points, method = c("pearson"))<br>
-This resulted in 0.35, statistically insignificant difference between this and GDP Per Capita<br>
-<br>
-Next looked at contingent size vs. total points<br>
-ggplot(data = winterolympicstudy) + geompoint(aes(x=Atheletes,y=TotalPoints,color=countryname)) + facetwrap(~country_name)<br>
-<br>
-cor(winterolympicstudy$Atheletes, winterolympicstudy$Total_Points, method = c("pearson"))<br>
-This has a much better correlation, at 0.736, plot also looks much more linear:<br>
-<br>
-<img src="images/plot1.png" alt="Linear Plot" width="750"><br><br>
-<br>
-0.736 is better, however there are some notable outliers such as Norway, which don't have as many athletes but still perform exceptionally well.<br>
-<br>
-Clearly there's something additional at play. Norway has been at or near the top of the medal count but doesn't fit neatly within this correlation. Additional factor that might need to be reviewed is which sports have the most medals awarded, etc. This will be an analysis for another time. For now, looking at correlation with this notable outlier.
-<br><br>
-Performed predictive analysis using relevant factors.<br>
-input <- winterolympicstudy[c("TotalPoints","gdpper_capita","Atheletes")]<br>
-View(input)<br>
-<br>
-model <- lm(TotalPoints~gdpper_capita+Atheletes, data = input)<br>
-<br>
-View(model)<br>
-<br>
-summary(model)$coefficient<br>
-<br>
-Estimate Std. Error t value Pr(>|t|)<br>
-(Intercept) -9.4913725212 3.770775e+00 -2.517088 1.274746e-02<br>
-gdppercapita 0.0002632879 8.869442e-05 2.968483 3.419816e-03<br>
-Atheletes 0.4966503345 3.761424e-02 13.203786 6.143128e-28<br>
-<br>
-confint(model)<br>
-sigma(model)/mean(winterolympicstudy$Total_Points)<br>
-<br>
-[1] 0.6478761<br>
-<br>
-This shows that between Athletes and GDP a reasonable correlation can be found.<br>
-<br>
-Testing regression models<br>
-plot(TotalPoints ~ Atheletes, data = winterolympic_study)<br>
-<br>
-Athletes.lm <- lm(TotalPoints ~ Atheletes, data = winterolympic_study)<br>
-<br>
-summary(Athletes.lm)<br>
-<br>
-predict(model, newdata = p)<br>
-<br>
-points.lm <- lm(TotalPoints ~ gdppercapita + Atheletes, data = winterolympic_study)<br>
-<br>
-summary(points.lm)<br>
-<br>
-Multiple Regression for both GDP Per Capita and Contingency Size<br>
-<br>
-par(mfrow=c(2,2))<br>
-plot(points.lm)<br>
-par(mfrow=c(1,1))<br>
-<br>
-summary(model)<br>
-<br>
-Test data to test the predictions<br>
-athletes.df <- data.frame(Atheletes=c(50,113,150))<br>
-<br>
-predict(Athletes.lm,newdata = athletes.df)<br>
-<br>
-Data appears to predict correctly using the one variable.<br>
-Attempted with 2<br>
-predict(Athletes.lm,newdata = athletes.df,interval = 'confidence')<br>
-<br>
-athgdp.df <- data.frame(Atheletes=c(50,113,150),gdppercapita=c(10000,20000,50000))<br>
-view(athgdp.df)<br>
-predict(Athletes.lm,newdata = athgdp.df,interval = 'confidence')<br>
-<br>
-2 variables appear to work correctly as well.<br><br>
-<h2>Tested against 2018 data. </h2>
-predict(Athletes.lm,newdata = df2018,interval = 'confidence')<br>
-<br>
-predict_2018 <- predict(Athletes.lm,newdata = df2018)<br>
-<br>
-Predicted point values align very well with actual 2018 data. Can determine which teams under and over performed based on prior data. Appears this model will be a good statistical model to choose future teams based on GDP Per Capita and Contingent Size.
-<br><br>
-Reviewing the predictions most are within reason. Norway is again the exception. This appears to be the only extreme example of this. While additional data might be able to be reviewed to determine why this is, suffice it to say Norway would be expected to continue getting significant points, perhaps due to sports they compete in, perhaps other factors are at play.
-<br>Potential overall variance could be explained with team sports such as Hockey which have a large number of athletes, but only 6 medals (Women and Mens).<br><br>
+UPDATE [OlympicDraft].[dbo].[convertedgdpdatapercapita]
+SET [OlympicDraft].[dbo].[convertedgdpdatapercapita].[gdppercapita] = 595
+WHERE [OlympicDraft].[dbo].[convertedgdpdatapercapita].[year_country] = '1992PRK'
+</div></code></code></pre>
+<p>Liechtenstein showed as an outlier with GDP per capita at 180,366 in 2018. Confirmed this number is correct per the World Bank, appears Liechtenstein does not often have atheletes in the winter olympics. Performing a quick SQL search to verify this shows that they fielded 3 atheletes in 2018, with a Bronze medal being won. Initially this appears to be a good ratio for win/loss.</p>
+<p>Finally, need to create a column that shows the total point value for each of these rows based on the above formula (6 points for Gold, 4 points for Silver, 3 points for Bronze).</p>
+<p>Updated query as follows:</p>
+<pre><code><code><div>SELECT [OlympicDraft].[dbo].[medalswprimary].[year], hostcountry, hostcity, [OlympicDraft].[dbo].[medalswprimary].[countryname], [OlympicDraft].[dbo].[medalswprimary].[countrycode], Gold, Silver, Bronze, [OlympicDraft].[dbo].[gdpwprimary].[value] AS GDP, [OlympicDraft].[dbo].[convertedgdpdatapercapita].[gdppercapita], Atheletes, (Gold6) + (Silver4) + (Bronze*3) AS 'TotalPoints' FROM [OlympicDraft].[dbo].[medalswprimary] 
 
-<h2>2022 Predictions</h2>
-Now, all that's left is predicting the 2022 Olympics. I plan on updating this, but team sizes were pulled on 01/19/2022 from the individual countries 2022 Olympics Wikipedia page.
-<br><br>
-View(df2022)<br>
-<br>
-Table has been created for 2022. Now time to create predictions:<br>
-<br>
-predict2022 <- predict(Athletes.lm,newdata = df2022,interval = 'confidence')<br>
-<br>
-View(predict2022)<br>
-<br>
-Predictions input. Now a simple matter of exporting the information to a .csv and inputting for visualizations in Tableau. Easiest tool is Excel for this. Uploaded data into excel and saved as csv, then added country_names for processing.
-<br><br>
-write.csv(predict2022,"2022_predictions.csv", row.names = FALSE)<br><br>
-<h2>Acknowledgements</h2>
-I'd like to thank Alex Freberg for his amazing Youtube series with excellent technical knowledge in an easy to understand manner.<br>
-I'd also like to thank Google and Coursera for their Data Analysis Certificate Program which I recently completed.<br><br><br>
+INNER JOIN gdpwprimary ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[gdpwprimary].[yearcountry]
+INNER JOIN contingencycleaned ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[contingencycleaned].[YearCountry] 
+INNER JOIN convertedgdpdatapercapita ON [OlympicDraft].[dbo].[medalswprimary].[primary] = [OlympicDraft].[dbo].[convertedgdpdatapercapita].[YearCountry]
+
+ORDER BY [OlympicDraft].[dbo].[convertedgdpdatapercapita].[year]
+</div></code></code></pre>
+<p>Spot checked, calculating correctly.</p>
+<p>Saved result as winterolympicsstudy.csv.</p>
+<p>We can now see that all relevant information is returned in the following table:</p>
+<p><img src="images/table2.png" alt="Calculated SQL Table"></p>
+<h2 id="rstudio-work">RStudio Work</h2>
+<p>To continue analysis, opened this CSV in RStudio.</p>
+<pre><code><code><div>install.packages(&quot;tidyverse&quot;)
+library(tidyverse)
+library(ggplot2)
+install.packages(&quot;forecast&quot;)
+library(forecast)
+install.packages(&quot;GGally&quot;)
+library(GGally)
+install.packages(&quot;modelr&quot;)
+library(modelr)
+
+View(winterolympicstudy)
+</div></code></code></pre>
+<p>Finding correlation between gdppercapita and Total_Points</p>
+<pre><code><code><div>ggplot(data = winterolympicstudy) + geompoint(aes(x=gdppercapita,y=TotalPoints,color=countryname)) + facetwrap(~country_name)
+
+cor(winterolympicstudy$gdppercapita, winterolympicstudy$Total_Points, method = c(&quot;pearson&quot;))
+</div></code></code></pre>
+<p>Result is .347, showing a moderate correlation between these two figures.</p>
+<p>Looked next at GDP vs. TotalPoints</p>
+<pre><code><code><div>ggplot(data = winterolympicstudy) + geompoint(aes(x=GDP,y=TotalPoints,color=countryname))+
+facetwrap(~countryname)
+
+cor(winterolympicstudy$GDP, winterolympicstudy$Total_Points, method = c(&quot;pearson&quot;))
+</div></code></code></pre>
+<p>This resulted in 0.35, statistically insignificant difference between this and GDP Per Capita</p>
+<p>Next looked at contingent size vs. total points</p>
+<pre><code><code><div>ggplot(data = winterolympicstudy) + geompoint(aes(x=Atheletes,y=TotalPoints,color=countryname)) + facetwrap(~country_name)
+
+cor(winterolympicstudy$Atheletes, winterolympicstudy$Total_Points, method = c(&quot;pearson&quot;))
+</div></code></code></pre>
+<p>This has a much better correlation, at 0.736, plot also looks much more linear:</p>
+<p><img src="images/plot1.png" alt="Linear Plot" width="780"></p>
+<p>0.736 is better, however there are some notable outliers such as Norway, which don't have as many athletes but still perform exceptionally well.</p>
+<p>Clearly there's something additional at play. Norway has been at or near the top of the medal count but doesn't fit neatly within this correlation. Additional factor that might need to be reviewed is which sports have the most medals awarded, etc. This will be an analysis for another time as it it outside the initial scope of our review. For now, looking at correlation and will mark that this is a notable outlier..</p>
+<p>Performed predictive analysis using relevant factors.</p>
+<pre><code><code><div>input &lt;- winterolympicstudy[c(&quot;TotalPoints&quot;,&quot;gdpper_capita&quot;,&quot;Atheletes&quot;)]
+View(input)
+
+model &lt;- lm(TotalPoints~gdpper_capita+Atheletes, data = input)
+
+View(model)
+
+summary(model)$coefficient
+
+Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept) -9.4913725212 3.770775e+00 -2.517088 1.274746e-02
+gdppercapita 0.0002632879 8.869442e-05 2.968483 3.419816e-03
+Atheletes 0.4966503345 3.761424e-02 13.203786 6.143128e-28
+
+confint(model)
+sigma(model)/mean(winterolympicstudy$Total_Points)
+
+[1] 0.6478761
+</div></code></code></pre>
+<p>This shows that between Athletes and GDP a reasonable correlation can be found.</p>
+<p>Testing regression models</p>
+<pre><code><code><div>plot(TotalPoints ~ Atheletes, data = winterolympic_study)
+
+Athletes.lm &lt;- lm(TotalPoints ~ Atheletes, data = winterolympic_study)
+
+summary(Athletes.lm)
+
+predict(model, newdata = p)
+
+points.lm &lt;- lm(TotalPoints ~ gdppercapita + Atheletes, data = winterolympic_study)
+
+summary(points.lm)
+</div></code></code></pre>
+<p>Multiple Regression for both GDP Per Capita and Contingency Size</p>
+<pre><code><code><div>par(mfrow=c(2,2))
+plot(points.lm)
+par(mfrow=c(1,1))
+
+summary(model)
+</div></code></code></pre>
+<p>Test data to test the predictions</p>
+<pre><code><code><div>athletes.df &lt;- data.frame(Atheletes=c(50,113,150))
+
+predict(Athletes.lm,newdata = athletes.df)
+</div></code></code></pre>
+<p>Data appears to predict correctly using the one variable.
+Attempted with 2</p>
+<pre><code><code><div>predict(Athletes.lm,newdata = athletes.df,interval = 'confidence')
+
+athgdp.df &lt;- data.frame(Atheletes=c(50,113,150),gdppercapita=c(10000,20000,50000))
+view(athgdp.df)
+predict(Athletes.lm,newdata = athgdp.df,interval = 'confidence')
+</div></code></code></pre>
+<p>2 variables appear to work correctly as well.</p>
+<p>Tested against 2018 data.</p>
+<pre><code><code><div>predict(Athletes.lm,newdata = df2018,interval = 'confidence')
+
+predict_2018 &lt;- predict(Athletes.lm,newdata = df2018)
+</div></code></code></pre>
+<p>Predicted point values align very well with actual 2018 data. Can determine which teams under and over performed based on prior data. Appears this model will be a good statistical model to choose future teams based on GDP Per Capita and Contingent Size.</p>
+<p>Reviewing the predictions most are within reason. Norway is again the exception. This appears to be the only extreme example of this. While additional data might be able to be reviewed to determine why this is, suffice it to say Norway would be expected to continue getting significant points, perhaps due to sports they compete in, perhaps other factors are at play.
+Potential overall variance could be explained with team sports such as Hockey which have a large number of athletes, but only 6 medals (Women and Mens).</p>
+<h2 id="2022-predictions">2022 Predictions</h2>
+<p>Now, all that's left is predicting the 2022 Olympics. I plan on updating this, but team sizes were pulled on 01/19/2022 from the individual countries 2022 Olympics Wikipedia page.</p>
+<pre><code><code><div>View(df2022)
+</div></code></code></pre>
+<p>Table has been created for 2022. Now time to create predictions:</p>
+<pre><code><code><div>predict2022 &lt;- predict(Athletes.lm,newdata = df2022,interval = 'confidence')
+
+View(predict2022)
+</div></code></code></pre>
+<p>Predictions input. Now a simple matter of exporting the information to a .csv and inputting for visualizations in Tableau. Easiest tool is Excel for this. Uploaded data into excel and saved as csv, then added country_names for processing.</p>
+<pre><code><code><div>write.csv(predict2022,&quot;2022_predictions.csv&quot;, row.names = FALSE)
+</div></code></code></pre>
+<h2 id="visualization">Visualization</h2>
+<p>Used Tableau to create a dashboard highlighting these observations.  Dashboard can be accessed <a href="https://public.tableau.com/app/profile/eric1949/viz/OlympicDraftPicks/Dashboard1">here</a>.</p>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>I'd like to thank Alex Freberg for his amazing Youtube series with excellent technical knowledge in an easy to understand manner.
+I'd also like to thank Google and Coursera for their Data Analysis Certificate Program which I recently completed.</p>
 
 				<!-- Footer -->
 				<footer id="footer">
