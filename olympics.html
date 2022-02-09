@@ -170,7 +170,7 @@ UPDATE [OlympicDraft].[dbo].[convertedgdpdatapercapita]
 SET [OlympicDraft].[dbo].[convertedgdpdatapercapita].[gdppercapita] = 595
 WHERE [OlympicDraft].[dbo].[convertedgdpdatapercapita].[year_country] = '1992PRK'
 </div></code></code></pre>
-<p>Liechtenstein showed as an outlier with GDP per capita at 180,366 in 2018. Confirmed this number is correct per the World Bank, appears Liechtenstein does not often have atheletes in the winter olympics. Performing a quick SQL search to verify this shows that they fielded 3 atheletes in 2018, with a Bronze medal being won. Initially this appears to be a good ratio for win/loss.</p>
+<p>Liechtenstein showed as an outlier with GDP per capita at 180,366 in 2018. Confirmed this number is correct per the World Bank, appears Liechtenstein does not often have atheltes in the winter olympics. Performing a quick SQL search to verify this shows that they fielded 3 athletes in 2018, with a Bronze medal being won. Initially this appears to be a good ratio for win/loss.</p>
 <p>Finally, need to create a column that shows the total point value for each of these rows based on the above formula (6 points for Gold, 4 points for Silver, 3 points for Bronze).</p>
 <p>Updated query as follows:</p>
 <pre><code><code><div>SELECT [OlympicDraft].[dbo].[medalswprimary].[year], hostcountry, hostcity, [OlympicDraft].[dbo].[medalswprimary].[countryname], [OlympicDraft].[dbo].[medalswprimary].[countrycode], Gold, Silver, Bronze, [OlympicDraft].[dbo].[gdpwprimary].[value] AS GDP, [OlympicDraft].[dbo].[convertedgdpdatapercapita].[gdppercapita], Atheletes, (Gold6) + (Silver4) + (Bronze*3) AS 'TotalPoints' FROM [OlympicDraft].[dbo].[medalswprimary] 
